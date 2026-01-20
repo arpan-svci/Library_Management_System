@@ -36,6 +36,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return user
 
 class UserListSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = [
@@ -43,7 +45,9 @@ class UserListSerializer(serializers.ModelSerializer):
             "username",
             "email",
             "is_active",
-            "is_staff",
-            "is_superuser",
             "date_joined",
+            "role",
         ]
+
+    def get_role(self, obj):
+        return getattr(obj.userprofile, "role", None)

@@ -75,7 +75,7 @@ class ListUsersAPI(APIView):
     permission_classes = [IsAuthenticated, IsSuperUser]
 
     def get(self, request):
-        users_qs = User.objects.all().order_by("-date_joined")
+        users_qs = User.objects.filter(is_superuser=False).order_by("-date_joined")
 
         page = request.GET.get("page", 1)
         page_size = request.GET.get("page_size", 10)
