@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.core.paginator import Paginator
 
-from .serializers import UserCreateSerializer, UserListSerializer
+from .serializers import UserCreateSerializer, UserListSerializer, UserUpdateSerializer
 from .permissions import IsSuperUser
 
 from django.contrib.auth import get_user_model
@@ -91,3 +91,49 @@ class ListUsersAPI(APIView):
             "current_page": page_obj.number,
             "results": serializer.data
         })
+    
+class EditUserAPI(APIView):
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def put(self, request, user_id):
+        logger.info(
+            "EditUserAPI called by user_id=%s for target_user_id=%s",
+            getattr(request.user, "id", None),
+            user_id,
+        )
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            logger.error("User not found id=%s", user_id)
+            return Response(
+                {"error": "User not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Prevent editing superuser (optional safety)
+        if user.is_superuser:
+            return Response(
+                {"error": "Cannot edit a superuser"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = UserUpdateSerializer(
+            user,
+            data=request.data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            logger.info("User updated successfully id=%s", user.id)
+            return Response(
+                {"message": "User updated successfully"},
+                status=status.HTTP_200_OK,
+            )
+
+        logger.warning("EditUserAPI errors: %s", serializer.errors)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )

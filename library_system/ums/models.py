@@ -8,6 +8,9 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(blank=True, null=True, unique=True)
+    first_name = models.CharField(max_length=150, blank=True)
+    last_name = models.CharField(max_length=150, blank=True)
+
     class Meta:
         db_table = "Users"
 
