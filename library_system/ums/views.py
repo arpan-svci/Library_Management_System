@@ -6,6 +6,8 @@ from django.core.paginator import Paginator
 
 from .serializers import UserCreateSerializer, UserListSerializer, UserUpdateSerializer, UserDetailSerializer
 from .permissions import IsSuperUser
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.openapi import OpenApiTypes
 
 from django.contrib.auth import get_user_model
 
@@ -18,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class RegisterAPI(APIView):
     permission_classes = [IsAuthenticated, IsSuperUser]
-
+    @extend_schema(request=UserCreateSerializer, responses={201: OpenApiTypes.OBJECT})
     def post(self, request):
         logger.info("RegisterAPI POST called by user_id=%s", getattr(request.user, 'id', None))
         logger.debug("RegisterAPI request.data=%s", request.data)
@@ -73,7 +75,10 @@ class DeleteUserAPI(APIView):
     
 class ListUsersAPI(APIView):
     permission_classes = [IsAuthenticated, IsSuperUser]
+    # Hint for drf-spectacular and other tools that expect a serializer
+    serializer_class = UserListSerializer
 
+    @extend_schema(responses=UserListSerializer(many=True))
     def get(self, request):
         users_qs = User.objects.filter(is_superuser=False).order_by("-date_joined")
 
@@ -94,7 +99,7 @@ class ListUsersAPI(APIView):
     
 class EditUserAPI(APIView):
     permission_classes = [IsAuthenticated, IsSuperUser]
-
+    @extend_schema(request=UserUpdateSerializer, responses={200: OpenApiTypes.OBJECT})
     def put(self, request, user_id):
         logger.info(
             "EditUserAPI called by user_id=%s for target_user_id=%s",

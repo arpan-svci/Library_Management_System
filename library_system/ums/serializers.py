@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import UserProfile
 
 User = get_user_model()
@@ -9,7 +10,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=150)
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, min_length=4)
-    role = serializers.ChoiceField(choices=UserProfile.ROLE_CHOICES, write_only=True)
+    # Use explicit list of choice keys so drf-spectacular can render enum values
+    role = serializers.ChoiceField(choices=[c[0] for c in UserProfile.ROLE_CHOICES], write_only=True)
 
     class Meta:
         model = User  # The model this serializer is for
@@ -53,12 +55,13 @@ class UserListSerializer(serializers.ModelSerializer):
             "role",
         ]
 
+    @extend_schema_field({"type": "string", "enum": [c[0] for c in UserProfile.ROLE_CHOICES]})
     def get_role(self, obj):
         return getattr(obj.userprofile, "role", None)
     
 class UserUpdateSerializer(serializers.ModelSerializer):
     role = serializers.ChoiceField(
-        choices=UserProfile.ROLE_CHOICES,
+        choices=[c[0] for c in UserProfile.ROLE_CHOICES],
         write_only=True,
         required=False
     )
@@ -118,5 +121,6 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "role",
         ]
 
+    @extend_schema_field({"type": "string", "enum": [c[0] for c in UserProfile.ROLE_CHOICES]})
     def get_role(self, obj):
         return getattr(obj.userprofile, "role", None)
