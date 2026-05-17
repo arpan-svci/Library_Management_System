@@ -99,3 +99,24 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             profile.save()
 
         return instance
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "is_active",
+            "date_joined",
+            "last_login",
+            "role",
+        ]
+
+    def get_role(self, obj):
+        return getattr(obj.userprofile, "role", None)

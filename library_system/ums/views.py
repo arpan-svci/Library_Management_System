@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.core.paginator import Paginator
 
-from .serializers import UserCreateSerializer, UserListSerializer, UserUpdateSerializer
+from .serializers import UserCreateSerializer, UserListSerializer, UserUpdateSerializer, UserDetailSerializer
 from .permissions import IsSuperUser
 
 from django.contrib.auth import get_user_model
@@ -137,3 +137,28 @@ class EditUserAPI(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+class GetUserAPI(APIView):
+    permission_classes = [IsAuthenticated, IsSuperUser]
+
+    def get(self, request, user_id):
+        logger.info(
+            "GetUserAPI GET called by user_id=%s for target_user_id=%s",
+            getattr(request.user, "id", None),
+            user_id,
+        )
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            logger.error("GetUserAPI: user not found id=%s", user_id)
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Do not expose superuser details via this endpoint
+        if user.is_superuser:
+            logger.warning("GetUserAPI: attempted to access superuser id=%s by user_id=%s", user.id, getattr(request.user, "id", None))
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserDetailSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)

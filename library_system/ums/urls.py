@@ -3,7 +3,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from .views import RegisterAPI, DeleteUserAPI, ListUsersAPI, EditUserAPI
+from .views import RegisterAPI, DeleteUserAPI, ListUsersAPI, EditUserAPI, GetUserAPI
 
 urlpatterns = [
     path("register/", RegisterAPI.as_view()),
@@ -11,5 +11,6 @@ urlpatterns = [
     path("refresh/", TokenRefreshView.as_view()),
     path("delete/<uuid:user_id>/", DeleteUserAPI.as_view()),
     path("users/", ListUsersAPI.as_view()),
+    path("users/<uuid:user_id>/", GetUserAPI.as_view()),
     path("edit/<uuid:user_id>/", EditUserAPI.as_view()),
 ]

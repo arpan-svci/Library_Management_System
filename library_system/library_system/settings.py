@@ -21,6 +21,9 @@ REST_FRAMEWORK = {
     ),
 }
 
+# Use drf-spectacular for OpenAPI schema generation / Swagger UI
+REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = 'drf_spectacular.openapi.AutoSchema'
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
@@ -53,9 +56,27 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_spectacular',
     'ums',
     'library',
 ]
+
+# drf-spectacular settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Library Management System API',
+    'DESCRIPTION': 'API schema for Library Management System',
+    'VERSION': '1.0.0',
+    'COMPONENTS': {
+        'securitySchemes': {
+            'BearerAuth': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+            }
+        }
+    },
+    'SECURITY': [{'BearerAuth': []}],
+}
 
 # Use UUID-based custom user model in `ums` app
 AUTH_USER_MODEL = 'ums.User'

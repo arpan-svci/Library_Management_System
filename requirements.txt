@@ -9,3 +9,4 @@ python-dotenv>=1.0
 pytz>=2024.1
 
 gunicorn>=22.0
+drf-spectacular>=0.28.0
